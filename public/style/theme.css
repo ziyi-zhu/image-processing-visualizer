@@ -1,0 +1,19 @@
+#board {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+#board td{
+  /*border: 1px solid white;*/
+  width: 25px;
+  height: 25px;
+
+  transition-property: background-color;
+  transition-duration: 1.0s;
+  transition-timing-function: ease-in-out;
+}
+
+.empty {
+	border: 1px solid rgb(211, 211, 211);
+	background-color: white
+}

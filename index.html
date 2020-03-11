@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="public/style/theme.css">
+
+    <title>Visionizer</title>
+  </head>
+  <body>
+    <header>
+      <div class="navbar navbar-expand-md navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">Visionizer</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarDiv" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarDiv">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Algorithms
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                <a class="dropdown-item" id="gaussian" href="#">Gaussian Filter</a>
+                <a class="dropdown-item" href="#">Sobel Filter</a>
+                <a class="dropdown-item" href="#">Hough Transform</a>
+              </div>
+            </li>
+            <li class="nav-item active">
+              <a class="nav-link" href="#">Visualize <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="clear" href="#">Clear Board</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Save Image</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Speed: Fast
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                <a class="dropdown-item" href="#">Fast</a>
+                <a class="dropdown-item" href="#">Average</a>
+                <a class="dropdown-item" href="#">Slow</a>
+              </div>
+            </li>
+          </ul>
+          <form class="my-2 my-md-0">
+            <div class="custom-file">
+              <input type="file" class="custom-file-input" id="myFile" required>
+              <label class="custom-file-label" for="validatedCustomFile">Load image...</label>
+            </div>
+          </form>
+        </div>
+      </div>
+    </header>
+    <!-- <br> -->
+    <!-- <canvas id="canvas" style="width: 80%; height:80%;"></canvas> -->
+
+    <main role="main" class="p-3">
+      <div class="row">
+        <div class="col-md-8">
+          <table id="board"></table>
+        </div>
+
+        <aside class="col-md-4">
+          <div class="p-4 mb-3 bg-light rounded">
+            <h4 class="font-italic">About</h4>
+            <p class="mb-0" id="about-algorithm">In image processing, a kernel, convolution matrix, or mask is a small matrix. It is used for blurring, sharpening, embossing, edge detection, and more. This is accomplished by doing a convolution between a kernel and an image.</p>
+          </div>
+
+          <div class="p-4">
+            <h4 class="font-italic">Archives</h4>
+            <ol class="list-unstyled mb-0">
+              <li><a href="#">March 2014</a></li>
+              <li><a href="#">February 2014</a></li>
+              <li><a href="#">January 2014</a></li>
+              <li><a href="#">December 2013</a></li>
+              <li><a href="#">November 2013</a></li>
+              <li><a href="#">October 2013</a></li>
+              <li><a href="#">September 2013</a></li>
+              <li><a href="#">August 2013</a></li>
+              <li><a href="#">July 2013</a></li>
+              <li><a href="#">June 2013</a></li>
+              <li><a href="#">May 2013</a></li>
+              <li><a href="#">April 2013</a></li>
+            </ol>
+          </div>
+
+          <div class="p-4">
+            <h4 class="font-italic">Elsewhere</h4>
+            <ol class="list-unstyled">
+              <li><a href="#">GitHub</a></li>
+              <li><a href="#">Twitter</a></li>
+              <li><a href="#">Facebook</a></li>
+            </ol>
+          </div>
+        </aside>
+
+      </div>
+
+    </main>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/1.18.0/TweenMax.min.js"></script>
+    <script src='public/browser/board.js'></script>
+    <script src='public/browser/main.js'></script>
+  </body>
+</html>
