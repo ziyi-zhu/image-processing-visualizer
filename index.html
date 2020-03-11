@@ -14,8 +14,8 @@
   </head>
   <body>
     <header>
-      <div class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="#">Image Processing Visualizer</a>
+      <div class="navbar navbar-expand-xl navbar-dark bg-dark">
+        <a class="navbar-brand" href="/">Image Processing Visualizer</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarDiv" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -77,13 +77,17 @@
           </div>
 
           <div class="p-4">
-            <h4 class="font-italic" id="filterName"></h4>
-            <p id="filterDescription"></p>
-            <table id="filter"></table>
-            <p>Filter Input</p>
-            <br>
-            <table id="output"><tbody><tr><td></td></tr></tbody></table>
-            <p>Filter Output</p>
+            <h4 class="font-italic" id="filterName">Upload an Image</h4>
+            <p id="filterDescription">After uploading image, choose an image processing algorithm and click on the pixels to apply the kernel or click Visualize to see the algorithm in action.</p>
+          </div>
+
+          <div class="p-4 row">
+            <div class="col-xl-6">
+              <table id="input"><caption>Kernel Input</caption></table>
+            </div>
+            <div class="col-xl-6">
+              <table id="output"><caption>Kernel Output</caption><tbody><tr><td></td></tr></tbody></table>
+            </div>
           </div>
         </aside>
 

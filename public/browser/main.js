@@ -15,7 +15,7 @@ newBoard.initialise();
 var row, col;
 var speed = 1;
 let currentId;
-let prevId;
+let previousId;
 
 $("#gaussian").click(function(event){
   newBoard.filter.type = "gaussian";
@@ -77,6 +77,8 @@ $("#visualize").click(function(event){
   row = 0, col = 0;
   let timer = setInterval(function() {
     if (row == height) {
+      $(`#${previousId}`).removeClass("current");
+      $(`#${previousId}`).addClass("normal");
       clearInterval(timer);
       return;
     }
@@ -87,9 +89,9 @@ $("#visualize").click(function(event){
     $(`#${currentId}`).css("background-color", "rgb(" + lightness + "," + lightness + "," + lightness + ")");
     $(`#${currentId}`).removeClass("normal");
     $(`#${currentId}`).addClass("current");
-    $(`#${prevId}`).removeClass("current");
-    $(`#${currentId}`).addClass("normal");
-    prevId = currentId;
+    $(`#${previousId}`).removeClass("current");
+    $(`#${previousId}`).addClass("normal");
+    previousId = currentId;
 
     col++;
     if (col == width) {

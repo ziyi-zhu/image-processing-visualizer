@@ -92,8 +92,8 @@ Board.prototype.createFilter = function() {
     this.filter = newFilter;
   }
 
-  let filter = document.getElementById("filter");
-  filter.innerHTML = tableHTML;
+  let filter = document.getElementById("input");
+  filter.innerHTML += tableHTML;
 };
 
 Board.prototype.addEventListeners = function() {
@@ -118,6 +118,8 @@ Board.prototype.addEventListeners = function() {
       }
       currentElement.onmouseenter = () => {
         board.updateFilter(r, c);
+        $(`#${currentId}`).removeClass("normal");
+        $(`#${currentId}`).addClass("current");
         if (this.buttonsOn) {
           if (board.mouseDown) {
             let lightness = this.filter.output;
@@ -126,9 +128,8 @@ Board.prototype.addEventListeners = function() {
         }
       }
       currentElement.onmouseleave = () => {
-        if (this.buttonsOn) {
-          // 
-        }
+        $(`#${currentId}`).removeClass("current");
+        $(`#${currentId}`).addClass("normal");
       }
     }
   }
