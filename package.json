@@ -1,5 +1,5 @@
 {
-  "name": "visionizer",
+  "name": "image-processing-visualizer",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -12,12 +12,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ziyi-zhu/visionizer.git"
+    "url": "git+https://github.com/ziyi-zhu/image-processing-visualizer.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ziyi-zhu/visionizer/issues"
+    "url": "https://github.com/ziyi-zhu/image-processing-visualizer/issues"
   },
-  "homepage": "https://github.com/ziyi-zhu/visionizer#readme"
+  "homepage": "https://github.com/ziyi-zhu/image-processing-visualizer#readme"
 }
