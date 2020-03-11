@@ -1,6 +1,7 @@
 var filterWeights = {
   "none": [0, 0, 0, 0, 1, 0, 0, 0, 0],
-  "sobel": [1, 0, -1, 2, 0, -2, 1, 0, -1],
+  "sobelVertical": [1, 0, -1, 2, 0, -2, 1, 0, -1],
+  "sobelHorizontal": [1, 2, 1, 0, 0, 0, -1, -2, -1],
   "box": [1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9],
   "gaussian": [1/16, 1/8, 1/16, 1/8, 1/4, 1/8, 1/16, 1/8, 1/16],
 }
@@ -26,7 +27,13 @@ Filter.prototype.apply = function() {
   for (let i = 0; i < size; i++) {
     output += this.weights[i] * this.pixels[i].lightness;
   }
-  this.output = output;
+  if (this.type == "sobelVertical" || this.type == "sobelHorizontal") {
+    this.output = (output + 512) / 4;
+  }
+  else {
+    this.output = output;
+  }
+  
 }
 
 function Board(height, width) {
@@ -120,7 +127,7 @@ Board.prototype.addEventListeners = function() {
       }
       currentElement.onmouseleave = () => {
         if (this.buttonsOn) {
-
+          // 
         }
       }
     }
