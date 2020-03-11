@@ -26,9 +26,9 @@
                 Algorithms
               </a>
               <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                <a class="dropdown-item" id="gaussian" href="#">Gaussian Filter</a>
-                <a class="dropdown-item" href="#">Sobel Filter</a>
-                <a class="dropdown-item" href="#">Hough Transform</a>
+                <a class="dropdown-item" id="box" href="#">Box Blur</a>
+                <a class="dropdown-item" id="gaussian" href="#">Gaussian Blur</a>
+                <a class="dropdown-item" id="sobel" href="#">Sobel Operator</a>
               </div>
             </li>
             <li class="nav-item active">
@@ -38,7 +38,7 @@
               <a class="nav-link" id="clear" href="#">Clear Board</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Save Image</a>
+              <a class="nav-link" href="#">Clear Filter</a>
             </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -76,30 +76,13 @@
           </div>
 
           <div class="p-4">
-            <h4 class="font-italic">Archives</h4>
-            <ol class="list-unstyled mb-0">
-              <li><a href="#">March 2014</a></li>
-              <li><a href="#">February 2014</a></li>
-              <li><a href="#">January 2014</a></li>
-              <li><a href="#">December 2013</a></li>
-              <li><a href="#">November 2013</a></li>
-              <li><a href="#">October 2013</a></li>
-              <li><a href="#">September 2013</a></li>
-              <li><a href="#">August 2013</a></li>
-              <li><a href="#">July 2013</a></li>
-              <li><a href="#">June 2013</a></li>
-              <li><a href="#">May 2013</a></li>
-              <li><a href="#">April 2013</a></li>
-            </ol>
-          </div>
-
-          <div class="p-4">
-            <h4 class="font-italic">Elsewhere</h4>
-            <ol class="list-unstyled">
-              <li><a href="#">GitHub</a></li>
-              <li><a href="#">Twitter</a></li>
-              <li><a href="#">Facebook</a></li>
-            </ol>
+            <h4 class="font-italic" id="filterName"></h4>
+            <p id="filterDescription"></p>
+            <table id="filter"></table>
+            <p>Filter Input</p>
+            <br>
+            <table id="output"><tbody><tr><td></td></tr></tbody></table>
+            <p>Filter Output</p>
           </div>
         </aside>
 

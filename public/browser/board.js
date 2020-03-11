@@ -1,7 +1,32 @@
+var filterWeights = {
+  "none": [0, 0, 0, 0, 1, 0, 0, 0, 0],
+  "sobel": [1, 0, -1, 2, 0, -2, 1, 0, -1],
+  "box": [1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9],
+  "gaussian": [1/16, 1/8, 1/16, 1/8, 1/4, 1/8, 1/16, 1/8, 1/16],
+}
+
 function Pixel(id, status) {
   this.id = id;
   this.status = status;
   this.lightness = 0;
+}
+
+function Filter(height, width, type) {
+  this.height = height;
+  this.width = width;
+  this.type = type;
+  this.weights = filterWeights[type];
+  this.pixels = [];
+  this.output = 0;
+}
+
+Filter.prototype.apply = function() {
+  let output = 0;
+  let size = this.height * this.width;
+  for (let i = 0; i < size; i++) {
+    output += this.weights[i] * this.pixels[i].lightness;
+  }
+  this.output = output;
 }
 
 function Board(height, width) {
@@ -11,10 +36,12 @@ function Board(height, width) {
   this.pixels = {};
   this.mouseDown = false;
   this.buttonsOn = true;
+  this.filter = null;
 }
 
 Board.prototype.initialise = function() {
   this.createGrid();
+  this.createFilter();
   this.addEventListeners();
 };
 
@@ -41,6 +68,27 @@ Board.prototype.createGrid = function() {
   board.innerHTML = tableHTML;
 };
 
+Board.prototype.createFilter = function() {
+  let newFilter = new Filter(3, 3, "none");
+  let tableHTML = "";
+  for (let r = 0; r < 3; r++) {
+    let currentHTMLRow = `<tr>`;
+    for (let c = 0; c < 3; c++) {
+      let newPixelId = 3 * r + c;
+
+      newPixelClass = "empty";
+      newPixel = new Pixel(newPixelId, newPixelClass);
+      currentHTMLRow += `<td id="${newPixelId}"></td>`;
+      newFilter.pixels[3 * r + c] = newPixel;
+    }
+    tableHTML += `${currentHTMLRow}</tr>`;
+    this.filter = newFilter;
+  }
+
+  let filter = document.getElementById("filter");
+  filter.innerHTML = tableHTML;
+};
+
 Board.prototype.addEventListeners = function() {
   let board = this;
   for (let r = 0; r < board.height; r++) {
@@ -52,7 +100,8 @@ Board.prototype.addEventListeners = function() {
         e.preventDefault();
         if (this.buttonsOn) {
           board.mouseDown = true;
-          $(`#${currentId}`).css("background-color", "white");
+          let lightness = this.filter.output;
+          $(`#${currentId}`).css("background-color", "rgb(" + lightness + "," + lightness + "," + lightness + ")");
         }
       }
       currentElement.onmouseup = () => {
@@ -61,9 +110,11 @@ Board.prototype.addEventListeners = function() {
         }
       }
       currentElement.onmouseenter = () => {
+        board.updateFilter(r, c);
         if (this.buttonsOn) {
           if (board.mouseDown) {
-            $(`#${currentId}`).css("background-color", "white");
+            let lightness = this.filter.output;
+            $(`#${currentId}`).css("background-color", "rgb(" + lightness + "," + lightness + "," + lightness + ")");
           }
         }
       }
@@ -74,4 +125,23 @@ Board.prototype.addEventListeners = function() {
       }
     }
   }
+};
+
+Board.prototype.updateFilter = function(row, col) {
+  for (let x = 0; x < 3; x++) {
+    for (let y = 0; y < 3; y++) {
+      let r = row + x - 1;
+      let c = col + y - 1;
+      let lightness = 0;
+      let pixelId = 3 * x + y;
+      if (r >= 0 && r < this.height && c >= 0 && c < this.width) {
+        lightness = this.pixels[`${r}-${c}`].lightness;
+      }
+      $(`#${pixelId}`).css("background-color", "rgb(" + lightness + "," + lightness + "," + lightness + ")");
+      this.filter.pixels[pixelId].lightness = lightness;
+    }
+  }
+  this.filter.apply();
+  let lightness = this.filter.output;
+  $(`#output`).css("background-color", "rgb(" + lightness + "," + lightness + "," + lightness + ")");
 };
