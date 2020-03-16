@@ -7,9 +7,7 @@ const prewittOperator = require("./kernelMethods/prewittOperator");
 const sobelOperatorX = require("./kernelMethods/sobelOperatorX");
 const sobelOperatorY = require("./kernelMethods/sobelOperatorY");
 const sobelOperator = require("./kernelMethods/sobelOperator");
-
-const hue = 0;
-const saturation = 0;
+const cannyEdgeDetector = require("./kernelMethods/cannyEdgeDetector");
 
 function Board(height, width) {
   this.height = height;
@@ -79,7 +77,9 @@ Board.prototype.addEventListeners = function() {
         e.preventDefault();
         if (this.buttonsOn) {
           board.mouseDown = true;
-          let lightness = this.kernel.output;
+          let hue = this.kernel.output["hue"];
+          let saturation = this.kernel.output["saturation"];
+          let lightness = this.kernel.output["lightness"];
           $(`#${currentId}`).css("background-color", "hsl(" + hue + "," + saturation + "%," + lightness + "%)");
         }
       }
@@ -94,7 +94,9 @@ Board.prototype.addEventListeners = function() {
         if (this.buttonsOn) {
           board.updateKernel(r, c);
           if (board.mouseDown) {
-            let lightness = this.kernel.output;
+            let hue = this.kernel.output["hue"];
+            let saturation = this.kernel.output["saturation"];
+            let lightness = this.kernel.output["lightness"];
             $(`#${currentId}`).css("background-color", "hsl(" + hue + "," + saturation + "%," + lightness + "%)");
           }
         }
@@ -112,17 +114,25 @@ Board.prototype.updateKernel = function(row, col) {
     for (let y = 0; y < 3; y++) {
       let r = row + x - 1;
       let c = col + y - 1;
+      let hue = 0;
+      let saturation = 0;
       let lightness = 0;
       let pixelId = 3 * x + y;
       if (r >= 0 && r < this.height && c >= 0 && c < this.width) {
+        hue = this.pixels[`${r}-${c}`].hue;
+        saturation = this.pixels[`${r}-${c}`].saturation;
         lightness = this.pixels[`${r}-${c}`].lightness;
       }
       $(`#${pixelId}`).css("background-color", "hsl(" + hue + "," + saturation + "%," + lightness + "%)");
+      this.kernel.pixels[pixelId].hue = hue;
+      this.kernel.pixels[pixelId].saturation = saturation;
       this.kernel.pixels[pixelId].lightness = lightness;
     }
   }
   this.kernel.applyMethod();
-  let lightness = this.kernel.output;
+  let hue = this.kernel.output["hue"];
+  let saturation = this.kernel.output["saturation"];
+  let lightness = this.kernel.output["lightness"];
   $(`#out`).css("background-color", "hsl(" + hue + "," + saturation + "%," + lightness + "%)");
 };
 
@@ -150,31 +160,35 @@ $(".method").click(function(event){
   let methodId = event.target.id;
   let methodName = "";
   let method = null;
-  switch(methodId) {
+  switch (methodId) {
     case "box":
       methodName = "Box Blur";
       method = boxBlur;
-    break;
+      break;
     case "gaussian":
       methodName = "Gaussian Blur";
       method = gaussianBlur;
-    break;
+      break;
     case "prewitt":
       methodName = "Prewitt Operator";
       method = prewittOperator;
-    break;
+      break;
     case "sobelX":
-      methodName = "Sobel Operator";
+      methodName = "Sobel Operator (X Gradient)";
       method = sobelOperatorX;
-    break;
+      break;
     case "sobelY":
-      methodName = "Sobel Operator";
+      methodName = "Sobel Operator (Y Gradient)";
       method = sobelOperatorY;
-    break;
+      break;
     case "sobel":
       methodName = "Sobel Operator";
       method = sobelOperator;
-    break;
+      break;
+    case "canny":
+      methodName = "Canny Edge Detector";
+      method = cannyEdgeDetector;
+      break;
   }
   newBoard.kernel = new Kernel(3, 3, methodId, method);
   newBoard.createKernel();
@@ -208,6 +222,8 @@ $("#clearBoard").click(function(event){
 $("#clearFilter").click(function(event){
   for (let r = 0; r < height; r++) {
     for (let c = 0; c < width; c++) {
+      let hue = newBoard.pixels[`${r}-${c}`].hue;
+      let saturation = newBoard.pixels[`${r}-${c}`].saturation;
       let lightness = newBoard.pixels[`${r}-${c}`].lightness;
       $(`#${r}-${c}`).css("background-color", "hsl(" + hue + "," + saturation + "%," + lightness + "%)");
     }
@@ -223,11 +239,8 @@ $("#visualize").click(function(event){
       $(`#${previousId}`).removeClass("current");
       $(`#${previousId}`).addClass("normal");
       $(`#progress`).css("width", "0%");
-      for (let r = 0; r < height; r++) {
-        for (let c = 0; c < width; c++) {
-          newBoard.pixels[`${r}-${c}`].lightness = newBoard.newPixels[`${r}-${c}`].lightness;
-        }
-      }
+      $('#myModal').modal('show');
+
       clearInterval(timer);
       return;
     }
@@ -236,9 +249,13 @@ $("#visualize").click(function(event){
     currentId = `${row}-${col}`;
 
     let newPixel = new Pixel(currentId, "normal");
-    let lightness = newBoard.kernel.output;
+    let hue = newBoard.kernel.output["hue"];
+    let saturation = newBoard.kernel.output["saturation"];
+    let lightness = newBoard.kernel.output["lightness"];
     let progress = parseInt(row / (height - 1) * 100);
 
+    newPixel.hue = hue;
+    newPixel.saturation = saturation;
     newPixel.lightness = lightness;
     newBoard.newPixels[`${currentId}`] = newPixel;
 
@@ -255,6 +272,16 @@ $("#visualize").click(function(event){
       col = 0, row++;
     }
   }, speed * 10);
+});
+
+$("#save").click(function(event){
+  for (let r = 0; r < height; r++) {
+    for (let c = 0; c < width; c++) {
+      newBoard.pixels[`${r}-${c}`].hue = newBoard.newPixels[`${r}-${c}`].hue;
+      newBoard.pixels[`${r}-${c}`].saturation = newBoard.newPixels[`${r}-${c}`].saturation;
+      newBoard.pixels[`${r}-${c}`].lightness = newBoard.newPixels[`${r}-${c}`].lightness;
+    }
+  }
 });
 
 $("#fast").click(function(event){
@@ -304,6 +331,8 @@ function showImage(fileReader) {
     for (let y = 0; y < height*sample_size; y += sample_size) {
       for (let x = 0; x < width*sample_size; x += sample_size) {
         let p = (x + (y * w)) * 4;
+        let hue = 0;
+        let saturation = 0;
         let lightness = parseInt(pixelArr[p]*.117 + pixelArr[p + 1]*.230 + pixelArr[p + 2]*.045);
 
         let r = parseInt(y/sample_size);
@@ -313,6 +342,8 @@ function showImage(fileReader) {
         $(`#${r}-${c}`).addClass("normal");
         $(`#${r}-${c}`).css("background-color", "hsl(" + hue + "," + saturation + "%," + lightness + "%)");
 
+        newBoard.pixels[`${r}-${c}`].hue = hue;
+        newBoard.pixels[`${r}-${c}`].saturation = saturation;
         newBoard.pixels[`${r}-${c}`].lightness = lightness;
       }
     }

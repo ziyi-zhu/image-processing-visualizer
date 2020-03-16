@@ -4,7 +4,7 @@ function Kernel(height, width, type, method) {
   this.type = type;
   this.method = method;
   this.pixels = [];
-  this.output = 0;
+  this.output = {};
 }
 
 Kernel.prototype.applyMethod = function() {

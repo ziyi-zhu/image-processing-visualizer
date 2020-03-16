@@ -8,9 +8,7 @@ const prewittOperator = require("./kernelMethods/prewittOperator");
 const sobelOperatorX = require("./kernelMethods/sobelOperatorX");
 const sobelOperatorY = require("./kernelMethods/sobelOperatorY");
 const sobelOperator = require("./kernelMethods/sobelOperator");
-
-const hue = 0;
-const saturation = 0;
+const cannyEdgeDetector = require("./kernelMethods/cannyEdgeDetector");
 
 function Board(height, width) {
   this.height = height;
@@ -80,7 +78,9 @@ Board.prototype.addEventListeners = function() {
         e.preventDefault();
         if (this.buttonsOn) {
           board.mouseDown = true;
-          let lightness = this.kernel.output;
+          let hue = this.kernel.output["hue"];
+          let saturation = this.kernel.output["saturation"];
+          let lightness = this.kernel.output["lightness"];
           $(`#${currentId}`).css("background-color", "hsl(" + hue + "," + saturation + "%," + lightness + "%)");
         }
       }
@@ -95,7 +95,9 @@ Board.prototype.addEventListeners = function() {
         if (this.buttonsOn) {
           board.updateKernel(r, c);
           if (board.mouseDown) {
-            let lightness = this.kernel.output;
+            let hue = this.kernel.output["hue"];
+            let saturation = this.kernel.output["saturation"];
+            let lightness = this.kernel.output["lightness"];
             $(`#${currentId}`).css("background-color", "hsl(" + hue + "," + saturation + "%," + lightness + "%)");
           }
         }
@@ -113,17 +115,25 @@ Board.prototype.updateKernel = function(row, col) {
     for (let y = 0; y < 3; y++) {
       let r = row + x - 1;
       let c = col + y - 1;
+      let hue = 0;
+      let saturation = 0;
       let lightness = 0;
       let pixelId = 3 * x + y;
       if (r >= 0 && r < this.height && c >= 0 && c < this.width) {
+        hue = this.pixels[`${r}-${c}`].hue;
+        saturation = this.pixels[`${r}-${c}`].saturation;
         lightness = this.pixels[`${r}-${c}`].lightness;
       }
       $(`#${pixelId}`).css("background-color", "hsl(" + hue + "," + saturation + "%," + lightness + "%)");
+      this.kernel.pixels[pixelId].hue = hue;
+      this.kernel.pixels[pixelId].saturation = saturation;
       this.kernel.pixels[pixelId].lightness = lightness;
     }
   }
   this.kernel.applyMethod();
-  let lightness = this.kernel.output;
+  let hue = this.kernel.output["hue"];
+  let saturation = this.kernel.output["saturation"];
+  let lightness = this.kernel.output["lightness"];
   $(`#out`).css("background-color", "hsl(" + hue + "," + saturation + "%," + lightness + "%)");
 };
 
@@ -151,31 +161,35 @@ $(".method").click(function(event){
   let methodId = event.target.id;
   let methodName = "";
   let method = null;
-  switch(methodId) {
+  switch (methodId) {
     case "box":
       methodName = "Box Blur";
       method = boxBlur;
-    break;
+      break;
     case "gaussian":
       methodName = "Gaussian Blur";
       method = gaussianBlur;
-    break;
+      break;
     case "prewitt":
       methodName = "Prewitt Operator";
       method = prewittOperator;
-    break;
+      break;
     case "sobelX":
-      methodName = "Sobel Operator";
+      methodName = "Sobel Operator (X Gradient)";
       method = sobelOperatorX;
-    break;
+      break;
     case "sobelY":
-      methodName = "Sobel Operator";
+      methodName = "Sobel Operator (Y Gradient)";
       method = sobelOperatorY;
-    break;
+      break;
     case "sobel":
       methodName = "Sobel Operator";
       method = sobelOperator;
-    break;
+      break;
+    case "canny":
+      methodName = "Canny Edge Detector";
+      method = cannyEdgeDetector;
+      break;
   }
   newBoard.kernel = new Kernel(3, 3, methodId, method);
   newBoard.createKernel();
@@ -209,6 +223,8 @@ $("#clearBoard").click(function(event){
 $("#clearFilter").click(function(event){
   for (let r = 0; r < height; r++) {
     for (let c = 0; c < width; c++) {
+      let hue = newBoard.pixels[`${r}-${c}`].hue;
+      let saturation = newBoard.pixels[`${r}-${c}`].saturation;
       let lightness = newBoard.pixels[`${r}-${c}`].lightness;
       $(`#${r}-${c}`).css("background-color", "hsl(" + hue + "," + saturation + "%," + lightness + "%)");
     }
@@ -224,11 +240,8 @@ $("#visualize").click(function(event){
       $(`#${previousId}`).removeClass("current");
       $(`#${previousId}`).addClass("normal");
       $(`#progress`).css("width", "0%");
-      for (let r = 0; r < height; r++) {
-        for (let c = 0; c < width; c++) {
-          newBoard.pixels[`${r}-${c}`].lightness = newBoard.newPixels[`${r}-${c}`].lightness;
-        }
-      }
+      $('#myModal').modal('show');
+
       clearInterval(timer);
       return;
     }
@@ -237,9 +250,13 @@ $("#visualize").click(function(event){
     currentId = `${row}-${col}`;
 
     let newPixel = new Pixel(currentId, "normal");
-    let lightness = newBoard.kernel.output;
+    let hue = newBoard.kernel.output["hue"];
+    let saturation = newBoard.kernel.output["saturation"];
+    let lightness = newBoard.kernel.output["lightness"];
     let progress = parseInt(row / (height - 1) * 100);
 
+    newPixel.hue = hue;
+    newPixel.saturation = saturation;
     newPixel.lightness = lightness;
     newBoard.newPixels[`${currentId}`] = newPixel;
 
@@ -256,6 +273,16 @@ $("#visualize").click(function(event){
       col = 0, row++;
     }
   }, speed * 10);
+});
+
+$("#save").click(function(event){
+  for (let r = 0; r < height; r++) {
+    for (let c = 0; c < width; c++) {
+      newBoard.pixels[`${r}-${c}`].hue = newBoard.newPixels[`${r}-${c}`].hue;
+      newBoard.pixels[`${r}-${c}`].saturation = newBoard.newPixels[`${r}-${c}`].saturation;
+      newBoard.pixels[`${r}-${c}`].lightness = newBoard.newPixels[`${r}-${c}`].lightness;
+    }
+  }
 });
 
 $("#fast").click(function(event){
@@ -305,6 +332,8 @@ function showImage(fileReader) {
     for (let y = 0; y < height*sample_size; y += sample_size) {
       for (let x = 0; x < width*sample_size; x += sample_size) {
         let p = (x + (y * w)) * 4;
+        let hue = 0;
+        let saturation = 0;
         let lightness = parseInt(pixelArr[p]*.117 + pixelArr[p + 1]*.230 + pixelArr[p + 2]*.045);
 
         let r = parseInt(y/sample_size);
@@ -314,19 +343,21 @@ function showImage(fileReader) {
         $(`#${r}-${c}`).addClass("normal");
         $(`#${r}-${c}`).css("background-color", "hsl(" + hue + "," + saturation + "%," + lightness + "%)");
 
+        newBoard.pixels[`${r}-${c}`].hue = hue;
+        newBoard.pixels[`${r}-${c}`].saturation = saturation;
         newBoard.pixels[`${r}-${c}`].lightness = lightness;
       }
     }
   }
 };
-},{"./kernel":2,"./kernelMethods/boxBlur":3,"./kernelMethods/gaussianBlur":4,"./kernelMethods/methodDescription":5,"./kernelMethods/prewittOperator":6,"./kernelMethods/sobelOperator":7,"./kernelMethods/sobelOperatorX":8,"./kernelMethods/sobelOperatorY":9,"./pixel":10}],2:[function(require,module,exports){
+},{"./kernel":2,"./kernelMethods/boxBlur":3,"./kernelMethods/cannyEdgeDetector":4,"./kernelMethods/gaussianBlur":5,"./kernelMethods/methodDescription":6,"./kernelMethods/prewittOperator":7,"./kernelMethods/sobelOperator":8,"./kernelMethods/sobelOperatorX":9,"./kernelMethods/sobelOperatorY":10,"./pixel":11}],2:[function(require,module,exports){
 function Kernel(height, width, type, method) {
   this.height = height;
   this.width = width;
   this.type = type;
   this.method = method;
   this.pixels = [];
-  this.output = 0;
+  this.output = {};
 }
 
 Kernel.prototype.applyMethod = function() {
@@ -336,91 +367,165 @@ Kernel.prototype.applyMethod = function() {
 module.exports = Kernel;
 },{}],3:[function(require,module,exports){
 function boxBlur(size, pixels) {
-  let output = 0;
+  let lightness = 0;
   let weights = [1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9];
   for (let i = 0; i < size; i++) {
-    output += weights[i] * pixels[i].lightness;
+    lightness += weights[i] * pixels[i].lightness;
+  }
+  let output = {
+    "hue": pixels[4].hue,
+    "saturation": pixels[4].saturation,
+    "lightness": lightness
   }
   return output;
 }
 
 module.exports = boxBlur;
 },{}],4:[function(require,module,exports){
+function cannyEdgeDetector(size, pixels) {
+  let lightness = 0;
+  let direction = Math.abs(Math.round((pixels[4].hue - 180) / 45));
+  if (pixels[4].lightness > 20) {
+    switch (direction) {
+      case 0:
+      case 4:
+        if (pixels[4].lightness > pixels[3].lightness && pixels[4].lightness > pixels[5].lightness) {
+          lightness = 100;
+        }
+        break;
+      case 1:
+        if (pixels[4].lightness > pixels[0].lightness && pixels[4].lightness > pixels[8].lightness) {
+          lightness = 100;
+        }
+        break;
+      case 2:
+        if (pixels[4].lightness > pixels[1].lightness && pixels[4].lightness > pixels[7].lightness) {
+          lightness = 100;
+        }
+        break;
+      case 3:
+        if (pixels[4].lightness > pixels[2].lightness && pixels[4].lightness > pixels[6].lightness) {
+          lightness = 100;
+        }
+        break;
+    }
+  }
+  else {
+    lightness = 0;
+  }
+  let output = {
+    "hue": 0,
+    "saturation": 0,
+    "lightness": lightness
+  }
+  return output;
+}
+
+module.exports = cannyEdgeDetector;
+},{}],5:[function(require,module,exports){
 function gaussianBlur(size, pixels) {
-  let output = 0;
+  let lightness = 0;
   let weights = [1/16, 1/8, 1/16, 1/8, 1/4, 1/8, 1/16, 1/8, 1/16];
   for (let i = 0; i < size; i++) {
-    output += weights[i] * pixels[i].lightness;
+    lightness += weights[i] * pixels[i].lightness;
+  }
+  let output = {
+    "hue": pixels[4].hue,
+    "saturation": pixels[4].saturation,
+    "lightness": lightness
   }
   return output;
 }
 
 module.exports = gaussianBlur;
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 let methodDescription = {
   "box": `A box blur (also known as a box linear filter) is a spatial domain linear filter in which each pixel in the resulting image has a value equal to the average value of its neighboring pixels in the input image. It is a form of low-pass ("blurring") filter. $$\\mathbf{G} = \\frac{1}{9} \\begin{bmatrix}1 & 1 & 1\\\\1 & 1 & 1\\\\1 & 1 & 1\\end{bmatrix} * \\mathbf{A}$$ Box blurs are frequently used to approximate a Gaussian blur. By the central limit theorem, repeated application of a box blur will approximate a Gaussian blur.`,
   "gaussian": `In image processing, a Gaussian blur (also known as Gaussian smoothing) is the result of blurring an image by a Gaussian function. Mathematically, applying a Gaussian blur to an image is the same as convolving the image with a Gaussian function. This is also known as a two-dimensional Weierstrass transform. $$G(x,y) = \\frac{1}{2\\pi\\sigma^2} e^{-\\frac{x^2+y^2}{2\\sigma^2}}$$ Gaussian smoothing is also used as a pre-processing stage in computer vision algorithms in order to enhance image structures at different scales.`,
   "sobelX": `The operator uses two 3×3 kernels which are convolved with the original image to calculate approximations of the derivatives – one for horizontal changes, and one for vertical. $$\\mathbf{G}_x = \\begin{bmatrix}+1 & 0 & -1\\\\+2 & 0 & -2\\\\+1 & 0 & -1\\end{bmatrix} * \\mathbf{A}$$ $$\\mathbf{G}_y = \\begin{bmatrix}+1 & +2 & +1\\\\0 & 0 & 0\\\\-1 & -2 & -1\\end{bmatrix} * \\mathbf{A}$$ The x-coordinate is defined here as increasing in the "right"-direction, and the y-coordinate is defined as increasing in the "down"-direction. At each point in the image, the resulting gradient approximations can be combined to give the gradient magnitude and direction, using: $$\\mathbf{G} = \\sqrt{\\mathbf{G}_x^2 + \\mathbf{G}_y^2}$$ $$\\mathbf{\\Theta} = \\arctan{\\frac{\\mathbf{G}_y}{\\mathbf{G}_x}}$$`,
   "sobelY": `The operator uses two 3×3 kernels which are convolved with the original image to calculate approximations of the derivatives – one for horizontal changes, and one for vertical. $$\\mathbf{G}_x = \\begin{bmatrix}+1 & 0 & -1\\\\+2 & 0 & -2\\\\+1 & 0 & -1\\end{bmatrix} * \\mathbf{A}$$ $$\\mathbf{G}_y = \\begin{bmatrix}+1 & +2 & +1\\\\0 & 0 & 0\\\\-1 & -2 & -1\\end{bmatrix} * \\mathbf{A}$$ The x-coordinate is defined here as increasing in the "right"-direction, and the y-coordinate is defined as increasing in the "down"-direction. At each point in the image, the resulting gradient approximations can be combined to give the gradient magnitude and direction, using: $$\\mathbf{G} = \\sqrt{\\mathbf{G}_x^2 + \\mathbf{G}_y^2}$$ $$\\mathbf{\\Theta} = \\arctan{\\frac{\\mathbf{G}_y}{\\mathbf{G}_x}}$$`,
   "sobel": `The operator uses two 3×3 kernels which are convolved with the original image to calculate approximations of the derivatives – one for horizontal changes, and one for vertical. $$\\mathbf{G}_x = \\begin{bmatrix}+1 & 0 & -1\\\\+2 & 0 & -2\\\\+1 & 0 & -1\\end{bmatrix} * \\mathbf{A}$$ $$\\mathbf{G}_y = \\begin{bmatrix}+1 & +2 & +1\\\\0 & 0 & 0\\\\-1 & -2 & -1\\end{bmatrix} * \\mathbf{A}$$ The x-coordinate is defined here as increasing in the "right"-direction, and the y-coordinate is defined as increasing in the "down"-direction. At each point in the image, the resulting gradient approximations can be combined to give the gradient magnitude and direction, using: $$\\mathbf{G} = \\sqrt{\\mathbf{G}_x^2 + \\mathbf{G}_y^2}$$ $$\\mathbf{\\Theta} = \\arctan{\\frac{\\mathbf{G}_y}{\\mathbf{G}_x}}$$`,
-  "prewitt": `The operator uses two 3×3 kernels which are convolved with the original image to calculate approximations of the derivatives – one for horizontal changes, and one for vertical. $$\\mathbf{G}_x = \\begin{bmatrix}+1 & 0 & -1\\\\+1 & 0 & -1\\\\+1 & 0 & -1\\end{bmatrix} * \\mathbf{A}$$ $$\\mathbf{G}_y = \\begin{bmatrix}+1 & +1 & +1\\\\0 & 0 & 0\\\\-1 & -1 & -1\\end{bmatrix} * \\mathbf{A}$$ The x-coordinate is defined here as increasing in the "right"-direction, and the y-coordinate is defined as increasing in the "down"-direction. At each point in the image, the resulting gradient approximations can be combined to give the gradient magnitude and direction, using: $$\\mathbf{G} = \\sqrt{\\mathbf{G}_x^2 + \\mathbf{G}_y^2}$$ $$\\mathbf{\\Theta} = \\arctan{\\frac{\\mathbf{G}_y}{\\mathbf{G}_x}}$$`
+  "prewitt": `The operator uses two 3×3 kernels which are convolved with the original image to calculate approximations of the derivatives – one for horizontal changes, and one for vertical. $$\\mathbf{G}_x = \\begin{bmatrix}+1 & 0 & -1\\\\+1 & 0 & -1\\\\+1 & 0 & -1\\end{bmatrix} * \\mathbf{A}$$ $$\\mathbf{G}_y = \\begin{bmatrix}+1 & +1 & +1\\\\0 & 0 & 0\\\\-1 & -1 & -1\\end{bmatrix} * \\mathbf{A}$$ The x-coordinate is defined here as increasing in the "right"-direction, and the y-coordinate is defined as increasing in the "down"-direction. At each point in the image, the resulting gradient approximations can be combined to give the gradient magnitude and direction, using: $$\\mathbf{G} = \\sqrt{\\mathbf{G}_x^2 + \\mathbf{G}_y^2}$$ $$\\mathbf{\\Theta} = \\arctan{\\frac{\\mathbf{G}_y}{\\mathbf{G}_x}}$$`,
+  "canny": `The algorithm categorizes the continuous gradient directions into a small set of discrete directions, and then moves a 3x3 filter over the output of the previous step (that is, the edge strength and gradient directions). At every pixel, it suppresses the edge strength of the center pixel (by setting its value to 0) if its magnitude is not greater than the magnitude of the two neighbors in the gradient direction.`
 }
 
 module.exports = methodDescription;
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 function prewittOperator(size, pixels) {
-  let outputX = 0;
-  let outputY = 0;
+  let gradientX = 0;
+  let gradientY = 0;
   let weightsX = [1/3, 0, -1/3, 1/3, 0, -1/3, 1/3, 0, -1/3];
   let weightsY = [1/3, 1/3, 1/3, 0, 0, 0, -1/3, -1/3, -1/3];
   for (let i = 0; i < size; i++) {
-    outputX += weightsX[i] * pixels[i].lightness;
-    outputY += weightsY[i] * pixels[i].lightness;
+    gradientX += weightsX[i] * pixels[i].lightness;
+    gradientY += weightsY[i] * pixels[i].lightness;
   }
-  return 2 * Math.sqrt(outputX * outputX + outputY * outputY);
+  let output = {
+  	"hue": parseInt(Math.atan2(gradientY, gradientX) * 180 / Math.PI) + 180,
+    "saturation": 100,
+  	"lightness": 2 * Math.sqrt(gradientX * gradientX + gradientY * gradientY)
+  }
+  return output;
 }
 
 module.exports = prewittOperator;
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 function sobelOperator(size, pixels) {
-  let outputX = 0;
-  let outputY = 0;
+  let gradientX = 0;
+  let gradientY = 0;
   let weightsX = [1/4, 0, -1/4, 1/2, 0, -1/2, 1/4, 0, -1/4];
   let weightsY = [1/4, 1/2, 1/4, 0, 0, 0, -1/4, -1/2, -1/4];
   for (let i = 0; i < size; i++) {
-    outputX += weightsX[i] * pixels[i].lightness;
-    outputY += weightsY[i] * pixels[i].lightness;
+    gradientX += weightsX[i] * pixels[i].lightness;
+    gradientY += weightsY[i] * pixels[i].lightness;
   }
-  return 2 * Math.sqrt(outputX * outputX + outputY * outputY);
+  let output = {
+  	"hue": parseInt(Math.atan2(gradientY, gradientX) * 180 / Math.PI) + 180,
+  	"saturation": 100,
+  	"lightness": 2 * Math.sqrt(gradientX * gradientX + gradientY * gradientY)
+  }
+  return output;
 }
 
 module.exports = sobelOperator;
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 function sobelOperatorX(size, pixels) {
-  let output = 0;
+  let gradient = 0;
   let weights = [1/4, 0, -1/4, 1/2, 0, -1/2, 1/4, 0, -1/4];
   for (let i = 0; i < size; i++) {
-    output += weights[i] * pixels[i].lightness;
+    gradient += weights[i] * pixels[i].lightness;
   }
-  return output + 50;
+  let output = {
+  	"hue": 0,
+    "saturation": 0,
+  	"lightness": gradient + 50
+  }
+  return output;
 }
 
 module.exports = sobelOperatorX;
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 function sobelOperatorY(size, pixels) {
-  let output = 0;
+  let gradient = 0;
   let weights = [1/4, 1/2, 1/4, 0, 0, 0, -1/4, -1/2, -1/4];
   for (let i = 0; i < size; i++) {
-    output += weights[i] * pixels[i].lightness;
+    gradient += weights[i] * pixels[i].lightness;
   }
-  return output + 50;
+  let output = {
+  	"hue": 0,
+    "saturation": 0,
+  	"lightness": gradient + 50
+  }
+  return output;
 }
 
 module.exports = sobelOperatorY;
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 function Pixel(id, status) {
   this.id = id;
   this.status = status;
+  this.hue = 0;
+  this.saturation = 0;
   this.lightness = 0;
 }
 

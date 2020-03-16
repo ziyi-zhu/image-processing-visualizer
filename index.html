@@ -32,6 +32,7 @@
                 <a class="dropdown-item method" id="sobelX" href="#">Sobel Operator (X Gradient)</a>
                 <a class="dropdown-item method" id="sobelY" href="#">Sobel Operator (Y Gradient)</a>
                 <a class="dropdown-item method" id="sobel" href="#">Sobel Operator</a>
+                <a class="dropdown-item method" id="canny" href="#">Canny Edge Detector</a>
               </div>
             </li>
             <li class="nav-item active">
@@ -110,6 +111,26 @@
           </div>
         </aside>
 
+      </div>
+
+      <div class="modal" id="myModal">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Visualization complete</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <p>Save changes to apply filter.</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" id ="save" class="btn btn-primary" data-dismiss="modal">Save changes</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
       </div>
 
     </main>
