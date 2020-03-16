@@ -312,6 +312,54 @@ $("#myFile").change(function(event){
   }
 });
 
+function RGBToHSL(r,g,b) {
+  // Make r, g, and b fractions of 1
+  r /= 255;
+  g /= 255;
+  b /= 255;
+
+  // Find greatest and smallest channel values
+  let cmin = Math.min(r,g,b),
+      cmax = Math.max(r,g,b),
+      delta = cmax - cmin,
+      h = 0,
+      s = 0,
+      l = 0;
+
+  // Calculate hue
+  // No difference
+  if (delta == 0)
+    h = 0;
+  // Red is max
+  else if (cmax == r)
+    h = ((g - b) / delta) % 6;
+  // Green is max
+  else if (cmax == g)
+    h = (b - r) / delta + 2;
+  // Blue is max
+  else
+    h = (r - g) / delta + 4;
+
+  h = Math.round(h * 60);
+    
+  // Make negative hues positive behind 360°
+  if (h < 0)
+    h += 360;
+
+  // Calculate lightness
+  l = (cmax + cmin) / 2;
+
+  // Calculate saturation
+  s = delta == 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
+    
+  // Multiply l and s by 100
+  s = +(s * 100).toFixed(1);
+  l = +(l * 100).toFixed(1);
+
+  let output = [h, s, l];
+  return output;
+}
+
 function showImage(fileReader) {
   img.crossOrigin = "anonymous";
   img.src = fileReader.result;
@@ -325,16 +373,23 @@ function showImage(fileReader) {
     ctx.drawImage(img, 0, 0);
 
     let pixelArr = ctx.getImageData(0, 0, w, h).data;
-    let sample_size = parseInt(w / width);
+    let sample_size = 1;
+    if ((w / h) > (width / height)) {
+      sample_size = parseInt(h / height);
+    }
+    else {
+      sample_size = parseInt(w / width);
+    }
 
     let delayInMilliseconds = 2000;
 
     for (let y = 0; y < height*sample_size; y += sample_size) {
       for (let x = 0; x < width*sample_size; x += sample_size) {
         let p = (x + (y * w)) * 4;
-        let hue = 0;
-        let saturation = 0;
-        let lightness = parseInt(pixelArr[p]*.117 + pixelArr[p + 1]*.230 + pixelArr[p + 2]*.045);
+        let output = RGBToHSL(pixelArr[p], pixelArr[p + 1], pixelArr[p + 2]);
+        let hue = output[0];
+        let saturation = output[1];
+        let lightness = output[2];
 
         let r = parseInt(y/sample_size);
         let c = parseInt(x/sample_size);
