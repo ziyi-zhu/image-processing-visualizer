@@ -147,7 +147,14 @@ let imageData;
 let navbarHeight = $("#navbarDiv").height();
 // let textHeight = $("#mainText").height();
 let height = Math.floor(($(document).height() - navbarHeight) / 28);
-let width = Math.floor($(document).width() / 38);
+let width;
+
+if ($(document).width() < 750) {
+  width = Math.floor($(document).width() / 26);
+} else {
+  width = Math.floor($(document).width() / 38);
+}
+
 let newBoard = new Board(height, width);
 newBoard.initialise();
 
