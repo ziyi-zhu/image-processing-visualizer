@@ -4,7 +4,7 @@ Visualization for image processing algorithms.
 
 ## Introduction
 
-In image processing, a kernel, convolution matrix, or mask is a small matrix. It is used for blurring, sharpening, embossing, edge detection, and more. This is accomplished by doing a convolution between a kernel and an image. See the algorithms in action on <a href="https://ziyi-zhu.github.io/image-processing-visualizer/">Image Processing Visuailizer</a>.
+In image processing, a kernel, convolution matrix, or mask is a small matrix. It is used for blurring, sharpening, embossing, edge detection, and more. This is accomplished by doing a convolution between a kernel and an image and this project aims to visualize the process of such algorithms. See the algorithms in action on <a href="https://ziyizhu.me/image-processing-visualizer/">Image Processing Visuailizer</a>.
 
 ## Dependencies
 
