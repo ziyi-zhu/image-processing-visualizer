@@ -1,7 +1,7 @@
 {
   "name": "image-processing-visualizer",
   "version": "1.0.0",
-  "description": "",
+  "description": "Visualization for image processing algorithms.",
   "main": "index.js",
   "dependencies": {
     "express": "^4.17.1"
@@ -14,7 +14,7 @@
     "type": "git",
     "url": "git+https://github.com/ziyi-zhu/image-processing-visualizer.git"
   },
-  "author": "",
+  "author": "Ziyi Zhu",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/ziyi-zhu/image-processing-visualizer/issues"
